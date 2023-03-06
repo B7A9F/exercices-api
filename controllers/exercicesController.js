@@ -31,11 +31,9 @@ const getAllExercices = asyncHandler(async (req, res) => {
     Exercice.find({ owner: [req.user._id, "system"] }),
     promisifiedRequest(options),
   ]).catch((err) => console.log(err));
+
   if (remote.statusCode !== 200) {
     return res.status(200).json([...local]);
-  }
-  if (local.statusCode !== 200) {
-    return res.status(200).json([...JSON.parse(remote.body)]);
   }
   const data = [...local, ...JSON.parse(remote.body)];
   return res.status(200).json(data);
