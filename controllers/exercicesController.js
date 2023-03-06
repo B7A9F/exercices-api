@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { promisifiedRequest } = require("../utils/api");
 const Exercice = require("../models/exercicesModel");
+require("dotenv").config();
 
 //@desc Get local exercices
 //@route GET /api/exercices/local
@@ -13,9 +14,8 @@ const getLocalExercices = asyncHandler(async (req, res) => {
 const options = {
   url: "https://api.api-ninjas.com/v1/exercises",
   method: "GET",
-  gzip: true,
   headers: {
-    "X-Api-Key": process.env.X_API_KEY,
+    "X-Api-Key": process.env.EXERCICES_API_KEY,
   },
 };
 //@desc Get remote exercices
@@ -23,9 +23,9 @@ const options = {
 //@access private
 const getRemoteExercices = asyncHandler(async (req, res) => {
   const response = await promisifiedRequest(options);
+
   res.status(200).json(JSON.parse(response.body));
 });
-
 const getAllExercices = asyncHandler(async (req, res) => {
   const [local, remote] = await Promise.all([
     Exercice.find({ owner: [req.user._id, "system"] }),
@@ -33,6 +33,9 @@ const getAllExercices = asyncHandler(async (req, res) => {
   ]).catch((err) => console.log(err));
   if (remote.statusCode !== 200) {
     return res.status(200).json([...local]);
+  }
+  if (local.statusCode !== 200) {
+    return res.status(200).json([...JSON.parse(remote.body)]);
   }
   const data = [...local, ...JSON.parse(remote.body)];
   return res.status(200).json(data);
