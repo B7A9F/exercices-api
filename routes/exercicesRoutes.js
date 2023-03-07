@@ -58,6 +58,24 @@ router.use(validateToken);
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Error:
+ *       type: object
+ *       required:
+ *         - title
+ *         - message
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: Error title
+ *         message:
+ *           type: string
+ *           description: Error message
+ */
+
+/**
+ * @swagger
  * /api/exercices/:
  *   get:
  *     summary: Returns the list of all the exerices
@@ -73,6 +91,10 @@ router.use(validateToken);
  *                 $ref: '#/components/schemas/Exercice'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 
 /**
@@ -94,10 +116,24 @@ router.use(validateToken);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Exercice'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Some server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.route("/").get(getAllExercices).post(createExercice);
 /**
@@ -117,6 +153,16 @@ router.route("/").get(getAllExercices).post(createExercice);
  *                 $ref: '#/components/schemas/Exercice'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.route("/local").get(getLocalExercices);
 /**
@@ -136,6 +182,10 @@ router.route("/local").get(getLocalExercices);
  *                 $ref: '#/components/schemas/Exercice'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.route("/remote").get(getRemoteExercices);
 
@@ -158,16 +208,28 @@ router
    *     responses:
    *       200:
    *         description: The exercice by id
-   *         contens:
+   *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Exercice'
    *       401:
    *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       404:
-   *         description: The exercice was not found
+   *         description: Exercice not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Some server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   .get(getExercice)
 
@@ -193,18 +255,34 @@ router
    *     responses:
    *       200:
    *         description: Updated exercice
-   *         contens:
+   *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Exercice'
    *       401:
    *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       403:
-   *         description: User don't have permission to update other user exercices
+   *         description: Forbidden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       404:
-   *         description: The exercice was not found
+   *         description: Exercice not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Some server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   .put(updateExercice)
   /**
@@ -229,18 +307,34 @@ router
    *     responses:
    *       200:
    *         description: Deleted exercice
-   *         contens:
+   *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Exercice'
    *       401:
    *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       403:
-   *         description: User don't have permission to update other user exercices
+   *         description: Forbidden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       404:
-   *         description: The exercice was not found
+   *         description: Exercice not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Some server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   .delete(deleteExercice);
 

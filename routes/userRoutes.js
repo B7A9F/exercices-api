@@ -71,9 +71,17 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/RegisterResponse'
  *       400:
- *         description: All fields must be filled / Email not valid / Password not strong enough / Email already in use
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Some server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post("/register", registerUser);
 
@@ -136,9 +144,17 @@ router.post("/register", registerUser);
  *             schema:
  *               $ref: '#/components/schemas/LoginResponse'
  *       400:
- *         description: All fields must be filled / Incorrect email / Incorrect password
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Some server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post("/login", loginUser);
 
