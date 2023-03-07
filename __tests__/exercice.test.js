@@ -7,6 +7,22 @@ const Exercice = require("../models/exercicesModel");
 require("dotenv").config();
 
 let token;
+const exerciceRequest = async ({ endpoint, method, data, status, message }) => {
+  const req = {
+    GET: request(app).get(endpoint),
+    POST: request(app).post(endpoint).send(data),
+    PUT: request(app).put(endpoint).send(data),
+    DELETE: request(app).delete(endpoint),
+  };
+  const { body, statusCode } = await req[method]
+    .set("Authorization", `Bearer ${token}`)
+    .expect("Content-Type", /json/);
+  expect(statusCode).toBe(status);
+  if (message) {
+    expect(body.message).toBe(message);
+  }
+  return body;
+};
 
 beforeEach(async () => {
   await mongoose.connect(process.env.TESTING_STRING);
@@ -31,11 +47,11 @@ describe("Auth ", () => {
 
 describe("Exercices from multiple sources", () => {
   it("return status code 200 and an array of exercices", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices",
+      method: "GET",
+      status: 200,
+    });
     expect(body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -50,11 +66,11 @@ describe("Exercices from multiple sources", () => {
 
 describe("Local exercices", () => {
   it("return status code 200 and an array of exercices", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices/local")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices/local",
+      method: "GET",
+      status: 200,
+    });
     expect(body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -69,11 +85,11 @@ describe("Local exercices", () => {
 });
 describe("Remote exercices", () => {
   it("return status code 200 and an array of exercices", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices/remote")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices/remote",
+      method: "GET",
+      status: 200,
+    });
     expect(body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -88,33 +104,30 @@ describe("Remote exercices", () => {
 
 describe("Create Exercice", () => {
   it("return status code 400 if empty fields", async () => {
-    const { body, statusCode } = await request(app)
-      .post("/api/exercices")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.EMPTY)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(400);
-    expect(body.message).toBe("name, type and muscle fields are mandatory !");
+    await exerciceRequest({
+      endpoint: "/api/exercices",
+      method: "POST",
+      data: EXERCICE.EMPTY,
+      status: 400,
+      message: "name, type and muscle fields are mandatory !",
+    });
   });
   it("return status code 400 if exercice already exist", async () => {
-    const { body, statusCode } = await request(app)
-      .post("/api/exercices")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.EXISTING)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(400);
-    expect(body.message).toBe(
-      "Exercice already exist, you can delete or update it by id."
-    );
+    await exerciceRequest({
+      endpoint: "/api/exercices",
+      method: "POST",
+      data: EXERCICE.EXISTING,
+      status: 400,
+      message: "Exercice already exist, you can delete or update it by id.",
+    });
   });
   it("return status code 201 and exercice object", async () => {
-    const { body, statusCode } = await request(app)
-      .post("/api/exercices")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.VALID)
-      .expect("Content-Type", /json/);
-
-    expect(statusCode).toBe(201);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices",
+      method: "POST",
+      data: EXERCICE.VALID,
+      status: 201,
+    });
     expect(body).toEqual(
       expect.objectContaining({
         name: expect.any(String),
@@ -127,27 +140,27 @@ describe("Create Exercice", () => {
 
 describe("Get Exercice", () => {
   it("return status code 500 if invalid id", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices/6405edff2300e")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(500);
-    expect(body.message).toBe("error");
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff2300e",
+      method: "GET",
+      status: 500,
+      message: "error",
+    });
   });
   it("return status code 404 if exercice not found", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices/6405edff23eea965e362f00e")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(404);
-    expect(body.message).toBe("Exercice not found");
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff23eea965e362f00e",
+      method: "GET",
+      status: 404,
+      message: "Exercice not found",
+    });
   });
   it("return status code 200 and exercice object", async () => {
-    const { body, statusCode } = await request(app)
-      .get("/api/exercices/6405e722651f1ae9ca692a34")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices/6405e722651f1ae9ca692a34",
+      method: "GET",
+      status: 200,
+    });
     expect(body).toEqual(
       expect.objectContaining({
         name: expect.any(String),
@@ -160,41 +173,39 @@ describe("Get Exercice", () => {
 
 describe("Update Exercice", () => {
   it("return status code 403 if exercice added by someone else", async () => {
-    const { body, statusCode } = await request(app)
-      .put("/api/exercices/6405edff23eea965e362f00d")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.UPDATE)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(403);
-    expect(body.message).toBe(
-      "User don't have permission to update other user exercices"
-    );
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff23eea965e362f00d",
+      method: "PUT",
+      data: EXERCICE.UPDATE,
+      status: 403,
+      message: "User don't have permission to update other user exercices",
+    });
   });
   it("return status code 500 if invalid id", async () => {
-    const { body, statusCode } = await request(app)
-      .put("/api/exercices/6405edff2300e")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.UPDATE)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(500);
-    expect(body.message).toBe("error");
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff2300e",
+      method: "PUT",
+      data: EXERCICE.UPDATE,
+      status: 500,
+      message: "error",
+    });
   });
   it("return status code 404 if exercice not found", async () => {
-    const { body, statusCode } = await request(app)
-      .put("/api/exercices/6405edff23eea965e362f00e")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.UPDATE)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(404);
-    expect(body.message).toBe("Exercice not found");
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405ee7723eea9653362f00e",
+      method: "PUT",
+      data: EXERCICE.UPDATE,
+      status: 404,
+      message: "Exercice not found",
+    });
   });
   it("return status code 200 and exercice object", async () => {
-    const { body, statusCode } = await request(app)
-      .put("/api/exercices/6405ee7723eea965e362f00e")
-      .set("Authorization", `Bearer ${token}`)
-      .send(EXERCICE.UPDATE)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: "/api/exercices/6405ee7723eea965e362f00e",
+      method: "PUT",
+      data: EXERCICE.UPDATE,
+      status: 200,
+    });
     expect(body).toEqual(
       expect.objectContaining({
         name: expect.any(String),
@@ -220,29 +231,27 @@ describe("Delete Exercice", () => {
   });
 
   it("return status code 404 if exercice not found", async () => {
-    const { body, statusCode } = await request(app)
-      .delete("/api/exercices/6405edff23eea965e362f00e")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(404);
-    expect(body.message).toBe("Exercice not found");
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff23eea965e362f00e",
+      method: "DELETE",
+      status: 404,
+      message: "Exercice not found",
+    });
   });
   it("return status code 403 if exercice added by someone else", async () => {
-    const { body, statusCode } = await request(app)
-      .delete("/api/exercices/6405edff23eea965e362f00d")
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(403);
-    expect(body.message).toBe(
-      "User don't have permission to update other user exercices"
-    );
+    await exerciceRequest({
+      endpoint: "/api/exercices/6405edff23eea965e362f00d",
+      method: "DELETE",
+      status: 403,
+      message: "User don't have permission to update other user exercices",
+    });
   });
   it("return status code 200 and exercice object", async () => {
-    const { body, statusCode } = await request(app)
-      .delete("/api/exercices/" + exerciceId)
-      .set("Authorization", `Bearer ${token}`)
-      .expect("Content-Type", /json/);
-    expect(statusCode).toBe(200);
+    const body = await exerciceRequest({
+      endpoint: `/api/exercices/${exerciceId}`,
+      method: "DELETE",
+      status: 200,
+    });
     expect(body).toEqual(
       expect.objectContaining({
         name: expect.any(String),
